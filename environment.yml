@@ -1,0 +1,14 @@
+name: data_mining_project
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pandas
+  - numpy
+  - scikit-learn
+  - matplotlib
+  - seaborn
+  - flake8
+  - pytest
+  - jupyterlab
+  - pip
