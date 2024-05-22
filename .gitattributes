@@ -1,3 +1,5 @@
 *.csv filter=lfs diff=lfs merge=lfs -text
-*/ml-latest-small/ratings.csv -filter -diff -merge text
-
+data/raw/ml-latest/*.csv filter=lfs diff=lfs merge=lfs -text
+data/raw/ml-latest-small/links.csv filter=lfs diff=lfs merge=lfs -text
+data/raw/ml-latest-small/movies.csv filter=lfs diff=lfs merge=lfs -text
+data/raw/ml-latest-small/tags.csv filter=lfs diff=lfs merge=lfs -text
