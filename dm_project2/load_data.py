@@ -2,6 +2,12 @@ import os
 import pandas as pd
 
 
+class InvalidDatasetException(Exception):
+
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
 class MovieLensDataset:
 
     name: str
@@ -11,6 +17,8 @@ class MovieLensDataset:
     tags: pd.DataFrame
 
     def __init__(self, dataset_name: str = 'ml-latest-small') -> None:
+        if dataset_name not in ('ml-latest-small', 'ml-latest'):
+            raise InvalidDatasetException(f'Unknown dataset: {dataset_name}')
         dirname = os.path.dirname(__file__)
         self.name = dataset_name
         self.links = pd.read_csv(os.path.join(dirname, f'../data/raw/{dataset_name}/links.csv'))
