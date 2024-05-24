@@ -14,7 +14,7 @@ def mock_init(cls):
     cls._movies = pd.DataFrame({
         'movieId': [1],
         'title': ['Lorem'],
-        'genre': ['Ipsum']
+        'genres': ['Ipsum']
     }).set_index('movieId')
 
 
@@ -23,6 +23,14 @@ class TestDataset(unittest.TestCase):
     def test_invalid_dataset(self):
         self.assertRaises(ds.InvalidDatasetException, ds.MovieLensDataset, "lorem ipsum")
     
+    def test_get_movie_by_id(self):
+        with mock.patch.object(ds.MovieLensDataset, '__init__', mock_init):
+            dataset = ds.MovieLensDataset()
+            movie = dataset.get_movie_by_id(1)
+            self.assertEqual(1, movie.id)
+            self.assertEqual('Lorem', movie.title)
+            self.assertEqual(['Ipsum'], movie.genres)
+
     def test_get_nonexistent_movie(self):
         with mock.patch.object(ds.MovieLensDataset, '__init__', mock_init):
             dataset = ds.MovieLensDataset()
@@ -43,6 +51,7 @@ class TestDataset(unittest.TestCase):
         with mock.patch.object(ds.MovieLensDataset, '__init__', mock_init):
             dataset = ds.MovieLensDataset()
             self.assertRaises(ds.InvalidMovieException, dataset.delete_rating, 1, 2)
+
 
 if __name__ == '__main__':
     unittest.main()

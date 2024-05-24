@@ -35,8 +35,8 @@ class Movie:
     title: str
     """Title of the movie."""
 
-    tags: List[str]
-    """List of tags."""
+    genres: List[str]
+    """List of genres."""
 
 
 class MovieLensDataset:
