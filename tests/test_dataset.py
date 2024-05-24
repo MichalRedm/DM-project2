@@ -1,6 +1,5 @@
 import unittest
-import dm_project2.dataset as ds
-
+from context import dataset as ds
 
 class TestDataset(unittest.TestCase):
   
