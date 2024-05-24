@@ -1,5 +1,7 @@
 import os
 import pandas as pd
+from dataclasses import dataclass
+from typing import List
 
 
 class InvalidDatasetException(Exception):
@@ -7,6 +9,34 @@ class InvalidDatasetException(Exception):
 
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
+
+
+class InvalidMovieException(Exception):
+    """Exception thrown when invalid movie is selected."""
+
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
+class InvalidUserException(Exception):
+    """Exception thrown when invalid user is selected."""
+
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
+@dataclass
+class Movie:
+    """Representation of a movie from the Movie Lens dataset."""
+
+    id: int
+    """Id of the movie."""
+
+    title: str
+    """Title of the movie."""
+
+    tags: List[str]
+    """List of tags."""
 
 
 class MovieLensDataset:
@@ -39,9 +69,9 @@ class MovieLensDataset:
             raise InvalidDatasetException(f'Unknown dataset: {dataset_name}')
         dirname = os.path.dirname(__file__)
         self._name = dataset_name
-        self._links = pd.read_csv(os.path.join(dirname, f'../data/raw/{dataset_name}/links.csv'))
-        self._movies = pd.read_csv(os.path.join(dirname, f'../data/raw/{dataset_name}/movies.csv'))
-        self._ratings = pd.read_csv(os.path.join(dirname, f'../data/raw/{dataset_name}/ratings.csv'))
+        self._links = pd.read_csv(os.path.join(dirname, f'../data/raw/{dataset_name}/links.csv')).set_index('movieId')
+        self._movies = pd.read_csv(os.path.join(dirname, f'../data/raw/{dataset_name}/movies.csv')).set_index('movieId')
+        self._ratings = pd.read_csv(os.path.join(dirname, f'../data/raw/{dataset_name}/ratings.csv')).set_index(['userId', 'movieId'])
         self._tags = pd.read_csv(os.path.join(dirname, f'../data/raw/{dataset_name}/tags.csv'))
     
     def get_name(self) -> str:
@@ -163,3 +193,72 @@ class MovieLensDataset:
             Data frame conatining information about tags.
         """
         return self._tags
+    
+    def get_movie_by_id(self, movie_id: int):
+        """
+        Provides movie data from the dataset for a given movie id.
+
+        Parameters
+        ----------
+        movie_id : int
+            Id of the movie that should be retrieved.
+
+        Returns
+        -------
+        Movie
+            Contains properties `id`, `title` and `tags`
+            (in form of a list).
+        
+        Raises
+        ------
+        dataset.InvalidMovieException
+            When there is no movie with requested `movieId`.
+        """
+
+        if movie_id not in self._movies.index:
+            raise InvalidMovieException(f'There is no movie with movieId={movie_id}.')
+        
+        title: str
+        tags_str: str
+        title, tags_str = self._movies.loc[[movie_id]].values.reshape(-1)
+        tags = tags_str.split('|')
+        return Movie(movie_id, title, tags)
+
+    def delete_rating(self, user_id: int, movie_id: int) -> bool:
+        """
+        Deletes a requested user rating from the `ratings` table.
+
+        Parameters
+        ----------
+        user_id : int
+            Id of the user whose rating should be removed.
+
+        movie_id : int
+            Id of the movie for which the rating should be removed.
+        
+        Returns
+        -------
+        bool
+            `True` if the rating was actually in the table `ratings`,
+            `False` otherwise.
+        
+        Raises
+        ------
+        dataset.InvalidUserException
+            When there is no user with requested `userId`.
+        
+        dataset.InvalidMovieException
+            When there is no movie with requested `movieId`.
+        """
+
+        if user_id not in self._ratings.index.get_level_values('userId'):
+            raise InvalidUserException(f'There is no user with userId={user_id}.')
+        
+        if movie_id not in self._movies.index:
+            raise InvalidMovieException(f'There is no movie with movieId={movie_id}.')
+        
+        if (user_id, movie_id) in self._ratings.index:
+            self._ratings.drop([user_id, movie_id], inplace=True)
+            return True
+        
+        return False
