@@ -14,6 +14,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def predict(dataset_name: str, user_id: int, movie_id: int) -> float:
+
+    dataset = MovieLensDataset(dataset_name)
+
+    movie = dataset.get_movie_by_id(movie_id)
+    dataset.delete_rating(user_id, movie_id)
+
+    return 0.0
+
+
 def main(args: List[str]) -> None:
 
     if len(args) != 2:
@@ -26,18 +36,18 @@ def main(args: List[str]) -> None:
     dataset = MovieLensDataset()
 
     try:
-        movie = dataset.get_movie_by_id(movie_id)
-    except InvalidMovieException:
-        logger.error(f'There is no movie with movieId={movie_id}.')
-        exit(1)
-    
-    logger.info(f'Estimating the rating for user with userId={user_id} for the movie with movieId={movie.id} ({movie.title}).')
-    try:
-        logger.info('Rating deleted from the dataset.' if dataset.delete_rating(user_id, movie_id)
-                    else 'No such rating in the dataset - no necessity to remove it.')
+        prediction = predict('ml-latest-small', user_id, movie_id)
     except InvalidUserException:
-        logger.error(f'There is no user with user with userId={user_id}.')
-        sys.exit(1)
+        logger.error(f'There is no user with userId={user_id}')
+        exit(1)
+    except InvalidMovieException:
+        logger.error(f'There is no movie with movieId={movie_id}')
+        exit(1)
+    except Exception as e:
+        logger.error(str(e))
+        exit(1)
+    else:
+        logger.info(f'Predicted rating: {prediction}')
 
 
 if __name__ == '__main__':
