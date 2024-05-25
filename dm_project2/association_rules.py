@@ -1,0 +1,1 @@
+from mlxtend.frequent_patterns import association_rules
