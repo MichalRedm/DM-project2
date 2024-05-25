@@ -1,7 +1,7 @@
 import sys
 import logging
 from typing import List
-from dataset import MovieLensDataset, InvalidMovieException, InvalidUserException
+from dataset import MovieLensDataset, InvalidMovieException, InvalidUserException, InvalidDatasetException
 
 logging.basicConfig(
     level=logging.INFO,
@@ -26,15 +26,19 @@ def predict(dataset_name: str, user_id: int, movie_id: int) -> float:
 
 def main(args: List[str]) -> None:
 
-    if len(args) != 2:
+    if len(args) != 3:
         print('Invalid number of arguments.')
         exit(1)
     
-    user_id = int(args[0])
-    movie_id = int(args[1])
+    dataset_name = args[0]
+    user_id = int(args[1])
+    movie_id = int(args[2])
 
     try:
-        prediction = predict('ml-latest-small', user_id, movie_id)
+        prediction = predict(dataset_name, user_id, movie_id)
+    except InvalidDatasetException:
+        logger.error(f'There is no dataset named {dataset_name}')
+        exit(1)
     except InvalidUserException:
         logger.error(f'There is no user with userId={user_id}')
         exit(1)
