@@ -33,8 +33,6 @@ def main(args: List[str]) -> None:
     user_id = int(args[0])
     movie_id = int(args[1])
 
-    dataset = MovieLensDataset()
-
     try:
         prediction = predict('ml-latest-small', user_id, movie_id)
     except InvalidUserException:
