@@ -107,7 +107,7 @@ class MovieLensDataset:
         pandas.DataFrame
             Data frame conatining data about links to other data sources.
         """
-        return self._links
+        return self._links.copy()
     
     def get_movies(self) -> pd.DataFrame:
         """
@@ -146,7 +146,7 @@ class MovieLensDataset:
         pandas.DataFrame
             Data frame conatining information about movies.
         """
-        return self._movies
+        return self._movies.copy()
 
     def get_ratings(self) -> pd.DataFrame:
         """
@@ -168,7 +168,7 @@ class MovieLensDataset:
         pandas.DataFrame
             Data frame conatining data about user ratings.
         """
-        return self._ratings
+        return self._ratings.copy()
     
     def get_tags(self) -> pd.DataFrame:
         """
@@ -192,7 +192,7 @@ class MovieLensDataset:
         pandas.DataFrame
             Data frame conatining information about tags.
         """
-        return self._tags
+        return self._tags.copy()
     
     def get_movie_by_id(self, movie_id: int):
         """
