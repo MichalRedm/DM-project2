@@ -2,6 +2,8 @@ import sys
 import logging
 from typing import List
 from dataset import MovieLensDataset, InvalidMovieException, InvalidUserException, InvalidDatasetException
+from preprocessing import Preprocessing
+from clustering import Clustering
 
 logging.basicConfig(
     level=logging.INFO,
@@ -20,6 +22,13 @@ def predict(dataset_name: str, user_id: int, movie_id: int) -> float:
 
     movie = dataset.get_movie_by_id(movie_id)
     dataset.delete_rating(user_id, movie_id)
+
+    preprocessing = Preprocessing(dataset)
+    clustering = Clustering(preprocessing)
+
+    similar_movies = clustering.get_movie_cluster(movie_id)
+    
+    logger.info(f'Similar movies: {similar_movies}')
 
     return 0.0
 
