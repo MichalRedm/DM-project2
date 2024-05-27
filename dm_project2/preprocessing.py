@@ -10,9 +10,11 @@ class Preprocessing:
     def __init__(self, dataset: MovieLensDataset) -> None:
         self._dataset = dataset
 
+    def movies_ohe(self) -> pd.DataFrame:
+        return self._dataset.get_movies()["genres"].str.get_dummies("|").drop(columns="(no genres listed)")    
+
     def preprocess_movies(self) -> pd.DataFrame:
-        movies = self._dataset.get_movies()
-        movies_ohe = movies["genres"].str.get_dummies("|").drop(columns="(no genres listed)")
+        movies_ohe = self.movies_ohe()
         return pd.DataFrame(StandardScaler().fit_transform(movies_ohe), columns=movies_ohe.columns)
 
 
