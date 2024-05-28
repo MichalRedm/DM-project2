@@ -33,11 +33,11 @@ def predict(dataset_name: str, user_id: int, movie_id: int) -> float:
 
     # return user_mean_rating
 
-    user_cluster = clustering.get_user_cluster(1, 1, user_n_clusters=30, movie_n_clusters=30)
+    user_cluster = clustering.get_user_cluster(user_id, movie_id, user_n_clusters=20, movie_n_clusters=3)
 
-    prediction = ratings[ratings.index.get_level_values('movieId') == 1 & ratings.index.get_level_values('userId').isin(user_cluster)]['rating'].mean()
+    prediction = ratings[ratings.index.get_level_values('movieId') == user_id & ratings.index.get_level_values('userId').isin(user_cluster)]['rating'].mean()
 
-    return round_rating(prediction)
+    return prediction
 
     # similar_movies = clustering.get_movie_cluster(movie_id)
     
