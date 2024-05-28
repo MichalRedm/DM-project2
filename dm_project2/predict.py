@@ -27,10 +27,21 @@ def predict(dataset_name: str, user_id: int, movie_id: int) -> float:
     preprocessing = Preprocessing(dataset)
     clustering = Clustering(preprocessing)
 
-    similar_movies = clustering.get_movie_cluster(movie_id)
-    
     ratings = dataset.get_ratings()
-    return round_rating(ratings[ratings.index.get_level_values('userId') == user_id & ratings.index.get_level_values('movieId').isin(similar_movies)]['rating'].mean())
+
+    # user_mean_rating = ratings[ratings.index.get_level_values('userId') == user_id]['rating'].mean()
+
+    # return user_mean_rating
+
+    user_cluster = clustering.get_user_cluster(1, 1, user_n_clusters=30, movie_n_clusters=30)
+
+    prediction = ratings[ratings.index.get_level_values('movieId') == 1 & ratings.index.get_level_values('userId').isin(user_cluster)]['rating'].mean()
+
+    return round_rating(prediction)
+
+    # similar_movies = clustering.get_movie_cluster(movie_id)
+    
+    # return round_rating(ratings[ratings.index.get_level_values('userId') == user_id & ratings.index.get_level_values('movieId').isin(similar_movies)]['rating'].mean())
 
 
 def round_rating(rating: float) -> float:

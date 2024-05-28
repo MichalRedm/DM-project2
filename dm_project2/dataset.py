@@ -258,7 +258,7 @@ class MovieLensDataset:
             raise InvalidMovieException(f'There is no movie with movieId={movie_id}.')
         
         if (user_id, movie_id) in self._ratings.index:
-            self._ratings.drop([user_id, movie_id], inplace=True)
+            self._ratings.drop((user_id, movie_id), inplace=True)
             return True
         
         return False
