@@ -36,6 +36,12 @@ def predict(
     return prediction if not pd.isna(prediction) else 3.5
 
 
+def baseline_predictor(user_id, movie_id, dataset_name = 'ml-latest-small') -> float:
+    dataset = MovieLensDataset(dataset_name)
+    ratings = dataset.get_ratings()
+    return ratings[ratings.index.get_level_values('userId') == user_id]['rating'].mean()
+
+
 def main() -> None:
 
     dataset = MovieLensDataset('ml-latest-small')
@@ -43,12 +49,13 @@ def main() -> None:
     y_true = []
     y_pred_model = []
     y_pred_base = []
-
+        
     for (user_id, movie_id), (rating, _) in dataset.get_ratings().sample(100).iterrows():
         prediction = predict(user_id, movie_id, weighted_mean_metric='confidence')
+        baseline_prediction = baseline_predictor(user_id, movie_id)
         y_true.append(rating)
         y_pred_model.append(prediction)
-        y_pred_base.append(3.5)
+        y_pred_base.append(baseline_prediction)
 
     print('Model:', mean_squared_error(y_true, y_pred_model))
     print('Baseline:', mean_squared_error(y_true, y_pred_base))
