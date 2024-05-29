@@ -17,6 +17,7 @@ def predict(
     assert weighted_mean_metric in ('antecedent support', 'consequent support', 'support', 'confidence', 'lift')
     
     dataset = MovieLensDataset(dataset_name)
+    dataset.delete_rating(user_id, movie_id)
     preprocessing = Preprocessing(dataset)
 
     prepr = pd.get_dummies(dataset.get_ratings().join(preprocessing.movies_ohe()).drop('timestamp', axis=1).droplevel('movieId'), columns=['rating']).astype(bool)
@@ -38,6 +39,7 @@ def predict(
 
 def baseline_predictor(user_id, movie_id, dataset_name = 'ml-latest-small') -> float:
     dataset = MovieLensDataset(dataset_name)
+    dataset.delete_rating(user_id, movie_id)
     ratings = dataset.get_ratings()
     return ratings[ratings.index.get_level_values('userId') == user_id]['rating'].mean()
 
