@@ -1,7 +1,7 @@
 import pandas as pd
 from dataset import MovieLensDataset
 from preprocessing import Preprocessing
-from mlxtend.frequent_patterns import fpgrowth, association_rules
+from mlxtend.frequent_patterns import apriori, association_rules
 from sklearn.metrics import mean_squared_error
 
 
