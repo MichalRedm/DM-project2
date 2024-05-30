@@ -5,11 +5,15 @@ from mlxtend.frequent_patterns import fpgrowth, association_rules
 from sklearn.metrics import mean_squared_error
 
 
-def baseline_predictor(user_id, movie_id, dataset_name = 'ml-latest-small') -> float:
+def baseline_predictor(user_id, movie_id, dataset_name = 'ml-latest-small', alpha: float = 0.5) -> float:
     dataset = MovieLensDataset(dataset_name)
     dataset.delete_rating(user_id, movie_id)
     ratings = dataset.get_ratings()
-    return ratings[ratings.index.get_level_values('userId') == user_id]['rating'].mean()
+    movie_avg = ratings[ratings.index.get_level_values('movieId') == movie_id]['rating'].mean()
+    if pd.isna(movie_avg):
+        movie_avg = 3.5
+    user_avg = ratings[ratings.index.get_level_values('userId') == user_id]['rating'].mean()
+    return movie_avg * alpha + user_avg * (1 - alpha)
 
 
 def predict(
