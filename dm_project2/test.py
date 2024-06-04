@@ -1,5 +1,4 @@
 import sys
-import random
 import pandas as pd
 from dataset import MovieLensDataset
 from preprocessing import MovieLensDatasetPreprocessor
@@ -19,8 +18,6 @@ def baseline_predictor(user_id, movie_id, dataset: MovieLensDataset, alpha: floa
 
 def main(args: List[str]) -> None:
 
-    random.seed(42)
-
     dataset_name = args[0]
     sample_size = int(args[1])
 
@@ -28,7 +25,7 @@ def main(args: List[str]) -> None:
 
     sample: List[Tuple[int, int, float]] = []
 
-    for (user_id, movie_id), (rating, _) in dataset.get_ratings().sample(sample_size).iterrows():
+    for (user_id, movie_id), (rating, _) in dataset.get_ratings().sample(sample_size, random_state=42).iterrows():
         dataset.delete_rating(user_id, movie_id)
         sample.append((user_id, movie_id, rating))
 
