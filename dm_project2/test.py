@@ -1,5 +1,4 @@
 import sys
-import pandas as pd
 from dataset import MovieLensDataset
 from preprocessing import MovieLensDatasetPreprocessor
 from predict import Predictor
