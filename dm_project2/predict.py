@@ -1,80 +1,100 @@
 import sys
-import logging
+import random
+import warnings
+import numpy as np
+import pandas as pd
+from dataset import MovieLensDataset
+from preprocessing import MovieLensDatasetPreprocessor
+from mlxtend.frequent_patterns import apriori, association_rules
 from typing import List
-from dataset import MovieLensDataset, InvalidMovieException, InvalidUserException, InvalidDatasetException
-from preprocessing import Preprocessing
-from clustering import Clustering
-from math import isnan
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.StreamHandler()
-    ]
-)
-
-logger = logging.getLogger(__name__)
 
 
-def predict(dataset_name: str, user_id: int, movie_id: int) -> float:
+class Predictor:
 
-    dataset = MovieLensDataset(dataset_name)
+    _preprocessor: MovieLensDatasetPreprocessor
+    _ratings_preprocessed: pd.DataFrame
 
-    movie = dataset.get_movie_by_id(movie_id)
-    dataset.delete_rating(user_id, movie_id)
+    def __init__(self) -> None:
+        self._preprocessor = None
 
-    preprocessing = Preprocessing(dataset)
-    clustering = Clustering(preprocessing)
-
-    ratings = dataset.get_ratings()
-
-    # user_mean_rating = ratings[ratings.index.get_level_values('userId') == user_id]['rating'].mean()
-
-    # return user_mean_rating
-
-    user_cluster = clustering.get_user_cluster(user_id, movie_id, user_n_clusters=20, movie_n_clusters=3)
-
-    prediction = ratings[ratings.index.get_level_values('movieId') == user_id & ratings.index.get_level_values('userId').isin(user_cluster)]['rating'].mean()
-
-    return prediction
-
-    # similar_movies = clustering.get_movie_cluster(movie_id)
+    def fit(self, preprocessor: MovieLensDatasetPreprocessor):
+        if not isinstance(preprocessor, MovieLensDatasetPreprocessor):
+            raise ValueError(f'Parameter of fit method should be of type MovieLensDatasetPreprocessor.')
+        self._preprocessor = preprocessor
+        self._ratings_preprocessed = preprocessor.preprocess_ratings()
     
-    # return round_rating(ratings[ratings.index.get_level_values('userId') == user_id & ratings.index.get_level_values('movieId').isin(similar_movies)]['rating'].mean())
+    def get_avg_movie_rating(self, movie_id: int, default: float = 3.5) -> float:
+        ratings = self._preprocessor.get_dataset().get_ratings()
+        movie_avg = ratings[ratings.index.get_level_values('movieId') == movie_id]['rating'].mean()
+        return movie_avg if not pd.isna(movie_avg) else default
+    
+    def get_avg_user_rating(self, user_id: int) -> float:
+        ratings = self._preprocessor.get_dataset().get_ratings()
+        return ratings[ratings.index.get_level_values('userId') == user_id]['rating'].mean()
+    
+    def predict(
+        self,
+        user_id: int,
+        movie_id: int,
+        treshold_itemsets: float = 0.01,
+        treshold_rules: float = 0.01,
+        weighted_mean_metric: str = 'confidence',
+        alpha: float = 0.5,
+        beta: float = 0.5
+    ) -> float:
+        
+        assert weighted_mean_metric in ('antecedent support', 'consequent support', 'support', 'confidence', 'lift')
+
+        warnings.filterwarnings('ignore')
+
+        user_prepr = self._ratings_preprocessed[self._ratings_preprocessed.index == user_id]
+
+        frequent_itemsets = apriori(user_prepr, min_support=treshold_itemsets, use_colnames=True)
+        rules = association_rules(frequent_itemsets, metric="support", min_threshold=treshold_rules)
+        rules = rules[rules['consequents'].apply(lambda x: len(x) == 1 and 'rating' in list(x)[0])]
+
+        movie = self._preprocessor.get_dataset().get_movie_by_id(movie_id)
+        genres = frozenset(movie.genres)
+
+        movie_avg = self.get_avg_movie_rating(movie_id)
+        user_avg = self.get_avg_user_rating(user_id)
+        avg_prediction = movie_avg * alpha + user_avg * (1 - alpha)
+
+        relevant_rules = rules[rules['antecedents'] <= genres]
+        relevant_rules.loc[:, 'consequents'] = relevant_rules['consequents'].apply(lambda x: float(list(x)[0].split('_')[1]))
+        rules_prediction = (relevant_rules['consequents'] * relevant_rules[weighted_mean_metric]).sum() / relevant_rules[weighted_mean_metric].sum()
+
+        if pd.isna(rules_prediction):
+            rules_prediction = avg_prediction
+        
+        return rules_prediction * beta + avg_prediction * (1 - beta)
 
 
 def round_rating(rating: float) -> float:
-    return 3.0 if isnan(rating) else round(rating * 2) / 2
+    return round(rating * 2) / 2
 
 
 def main(args: List[str]) -> None:
 
-    if len(args) != 3:
-        print('Invalid number of arguments.')
-        exit(1)
+    random.seed(42)
     
-    dataset_name = args[0]
-    user_id = int(args[1])
-    movie_id = int(args[2])
+    if len(args) != 3:
+        print("Invalid number of arguments.")
+        sys.exit(1)
+    
+    user_id = int(args[0])
+    movie_id = int(args[1])
+    dataset_name = args[2]
 
-    try:
-        prediction = predict(dataset_name, user_id, movie_id)
-    except InvalidDatasetException:
-        logger.error(f'There is no dataset named {dataset_name}')
-        exit(1)
-    except InvalidUserException:
-        logger.error(f'There is no user with userId={user_id}')
-        exit(1)
-    except InvalidMovieException:
-        logger.error(f'There is no movie with movieId={movie_id}')
-        exit(1)
-    except Exception as e:
-        logger.error(str(e))
-        exit(1)
-    else:
-        logger.info(f'Predicted rating: {prediction}')
+    dataset = MovieLensDataset(dataset_name)
+    dataset.delete_rating(user_id, movie_id)
+    preprocessor = MovieLensDatasetPreprocessor().fit_transform(dataset)
+    predictor = Predictor()
+    predictor.fit(preprocessor)
+    prediction = predictor.predict(user_id, movie_id)
+    
+    print(f'Predicted rating for movie "{dataset.get_movie_by_id(movie_id).title}" and user with userId={user_id}: {prediction} (rounded: {round_rating(prediction)})')
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(sys.argv[1:])
