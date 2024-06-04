@@ -52,8 +52,8 @@ def main(args: List[str]) -> None:
 
     var = dataset.get_ratings()['rating'].var()
 
-    print(f'Model: {mse_model} (standarized: {mse_model / var})')
-    print(f'Baseline: {mse_baseline} (standarized: {mse_baseline / var})')
+    print(f'Model MSE:    {mse_model : .4f} (standarized: {mse_model / var : .4f})')
+    print(f'Baseline MSE: {mse_baseline : .4f} (standarized: {mse_baseline / var : .4f})')
 
 
 if __name__ == "__main__":
