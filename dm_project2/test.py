@@ -1,4 +1,5 @@
 import sys
+import random
 import pandas as pd
 from dataset import MovieLensDataset
 from preprocessing import MovieLensDatasetPreprocessor
@@ -17,6 +18,8 @@ def baseline_predictor(user_id, movie_id, dataset: MovieLensDataset, alpha: floa
 
 
 def main(args: List[str]) -> None:
+
+    random.seed(42)
 
     dataset_name = args[0]
     sample_size = int(args[1])

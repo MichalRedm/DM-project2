@@ -75,8 +75,6 @@ def round_rating(rating: float) -> float:
 
 
 def main(args: List[str]) -> None:
-
-    random.seed(42)
     
     if len(args) != 3:
         print("Invalid number of arguments.")
