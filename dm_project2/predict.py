@@ -21,12 +21,12 @@ class Predictor:
         self._preprocessor = preprocessor
         self._ratings_preprocessed = preprocessor.preprocess_ratings()
     
-    def get_avg_movie_rating(self, movie_id: int, default: float = 3.5) -> float:
+    def _get_avg_movie_rating(self, movie_id: int, default: float = 3.5) -> float:
         ratings = self._preprocessor.get_dataset().get_ratings()
         movie_avg = ratings[ratings.index.get_level_values('movieId') == movie_id]['rating'].mean()
         return movie_avg if not pd.isna(movie_avg) else default
     
-    def get_avg_user_rating(self, user_id: int) -> float:
+    def _get_avg_user_rating(self, user_id: int) -> float:
         ratings = self._preprocessor.get_dataset().get_ratings()
         return ratings[ratings.index.get_level_values('userId') == user_id]['rating'].mean()
     
@@ -54,8 +54,8 @@ class Predictor:
         movie = self._preprocessor.get_dataset().get_movie_by_id(movie_id)
         genres = frozenset(movie.genres)
 
-        movie_avg = self.get_avg_movie_rating(movie_id)
-        user_avg = self.get_avg_user_rating(user_id)
+        movie_avg = self._get_avg_movie_rating(movie_id)
+        user_avg = self._get_avg_user_rating(user_id)
         avg_prediction = movie_avg * alpha + user_avg * (1 - alpha)
 
         relevant_rules = rules[rules['antecedents'] <= genres]
