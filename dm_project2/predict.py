@@ -8,6 +8,10 @@ from typing import List
 
 
 class Predictor:
+    """
+    Rating predictor for the Movie Lens dataset
+    based on association rules.
+    """
 
     _preprocessor: MovieLensDatasetPreprocessor
     _ratings_preprocessed: pd.DataFrame
@@ -15,18 +19,45 @@ class Predictor:
     def __init__(self) -> None:
         self._preprocessor = None
 
-    def fit(self, preprocessor: MovieLensDatasetPreprocessor):
+    def fit(self, preprocessor: MovieLensDatasetPreprocessor) -> None:
+        """Fits the predictor to the preprocessed data."""
         if not isinstance(preprocessor, MovieLensDatasetPreprocessor):
             raise ValueError(f'Parameter of fit method should be of type MovieLensDatasetPreprocessor.')
         self._preprocessor = preprocessor
         self._ratings_preprocessed = preprocessor.preprocess_ratings()
     
-    def _get_avg_movie_rating(self, movie_id: int, default: float = 3.5) -> float:
+    def _get_avg_movie_rating(self, movie_id: int) -> float:
+        """
+        Computes the average rating of the movie.
+
+        Parameters
+        ----------
+        movie_id : int
+            Id of the movie in the Movie Lens dataset.
+        
+        Returns
+        -------
+        float
+            Computed average rating.
+        """
         ratings = self._preprocessor.get_dataset().get_ratings()
         movie_avg = ratings[ratings.index.get_level_values('movieId') == movie_id]['rating'].mean()
-        return movie_avg if not pd.isna(movie_avg) else default
+        return movie_avg if not pd.isna(movie_avg) else 3.5
     
     def _get_avg_user_rating(self, user_id: int) -> float:
+        """
+        Computes the average rating given by a specific user.
+
+        Parameters
+        ----------
+        user_id : int
+            Id of the user in the Movie Lens dataset.
+        
+        Returns
+        -------
+        float
+            Computed average rating.
+        """
         ratings = self._preprocessor.get_dataset().get_ratings()
         return ratings[ratings.index.get_level_values('userId') == user_id]['rating'].mean()
     
@@ -34,12 +65,52 @@ class Predictor:
         self,
         user_id: int,
         movie_id: int,
-        treshold_itemsets: float = 0.01,
-        treshold_rules: float = 0.01,
+        threshold_itemsets: float = 0.01,
+        threshold_rules: float = 0.01,
         weighted_mean_metric: str = 'confidence',
         alpha: float = 0.5,
         beta: float = 0.5
     ) -> float:
+        """
+        Predicts rating for a given user-movie pair.
+
+        Parameters
+        ----------
+        user_id : int
+            Id of the user in the Movie Lens dataset.
+
+        movie_id : int
+            Id of the movie in the Movie Lens dataset.
+        
+        threshold_itemsets : float
+            Minimum support used in the apriori algorithm.
+        
+        threshold_rules : float
+            Threshold used when generating association rules.
+
+        weighted_mean_metric : str
+            Association rule metric that should be used as weights of
+            a weighted mean when computing the prediction based on
+            association rules. The following metrics are supported:
+            - `antecedent support`,
+            - `consequent support`,
+            - `support`,
+            - `confidence`,
+            - `lift`.
+        
+        alpha : float
+            Importance of the prediction based on average movie rating
+            vs average user rating in the final prediction.
+        
+        beta : float
+            How important is the prediction purely based on association
+            rules in the final prediction.
+        
+        Returns
+        -------
+        float
+            Prediction of the rating (not rounded).
+        """
         
         assert weighted_mean_metric in ('antecedent support', 'consequent support', 'support', 'confidence', 'lift')
 
@@ -47,8 +118,8 @@ class Predictor:
 
         user_prepr = self._ratings_preprocessed[self._ratings_preprocessed.index == user_id]
 
-        frequent_itemsets = apriori(user_prepr, min_support=treshold_itemsets, use_colnames=True)
-        rules = association_rules(frequent_itemsets, metric="support", min_threshold=treshold_rules)
+        frequent_itemsets = apriori(user_prepr, min_support=threshold_itemsets, use_colnames=True)
+        rules = association_rules(frequent_itemsets, metric="support", min_threshold=threshold_rules)
         rules = rules[rules['consequents'].apply(lambda x: len(x) == 1 and 'rating' in list(x)[0])]
 
         movie = self._preprocessor.get_dataset().get_movie_by_id(movie_id)
@@ -69,6 +140,20 @@ class Predictor:
 
 
 def round_rating(rating: float) -> float:
+    """
+    Rounds arbitrary rating to a proper rating
+    (to the nearest half).
+
+    Parameters
+    ----------
+    rating : float
+        Arbitrary rating to be rounded.
+
+    Returns
+    -------
+    float
+        Rounded rating.
+    """
     return round(rating * 2) / 2
 
 
