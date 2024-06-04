@@ -1,7 +1,5 @@
 import sys
-import random
 import warnings
-import numpy as np
 import pandas as pd
 from dataset import MovieLensDataset
 from preprocessing import MovieLensDatasetPreprocessor
