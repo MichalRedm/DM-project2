@@ -11,9 +11,11 @@ class MovieLensDatasetPreprocessor(BaseEstimator, TransformerMixin):
         self._dataset = None
 
     def fit(self, dataset: MovieLensDataset) -> None:
+        assert isinstance(dataset, MovieLensDataset), 'Dataset preprocessed by MovieLensDatasetPreprocessor should be of type MovieLensDataset.'
         self._dataset = dataset
     
     def transform(self, dataset: MovieLensDataset) -> "MovieLensDatasetPreprocessor":
+        assert isinstance(dataset, MovieLensDataset), 'Dataset preprocessed by MovieLensDatasetPreprocessor should be of type MovieLensDataset.'
         return self
     
     def fit_transform(self, dataset: MovieLensDataset) -> "MovieLensDatasetPreprocessor":

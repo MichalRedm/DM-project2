@@ -112,7 +112,13 @@ class Predictor:
             Prediction of the rating (not rounded).
         """
         
-        assert weighted_mean_metric in ('antecedent support', 'consequent support', 'support', 'confidence', 'lift')
+        assert isinstance(user_id, int) and user_id > 0, 'user_id should be a positive integer.'
+        assert isinstance(movie_id, int) and movie_id > 0, 'movie_id should be a positive integer.'
+        assert isinstance(threshold_itemsets, float) and threshold_itemsets >= 0, 'threshold_itemsets should be a nonnegative float.'
+        assert isinstance(threshold_rules, float) and threshold_rules >= 0, 'threshold_rules should be a nonnegative float.'
+        assert weighted_mean_metric in ('antecedent support', 'consequent support', 'support', 'confidence', 'lift'), 'Unknown weighted mean metric.'
+        assert isinstance(alpha, float) and 0 <= alpha <= 1, 'alpha should be a float from the interval [0, 1].'
+        assert isinstance(beta, float) and 0 <= beta <= 1, 'beta should be a float from the interval [0, 1].'
 
         warnings.filterwarnings('ignore')
 

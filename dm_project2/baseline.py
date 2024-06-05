@@ -12,6 +12,8 @@ class BaselinePredictor:
     
     def fit(self, dataset: MovieLensDataset) -> None:
         """Fits the predictor to the data."""
+        if not isinstance(dataset, MovieLensDataset):
+            raise ValueError(f'Parameter of fit method should be of type MovieLensDataset.')
         self._dataset = dataset
     
     def predict(self, user_id: int, movie_id: int) -> float:
