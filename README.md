@@ -26,7 +26,7 @@ To download the respository to your local computer run the following command:
 $ git clone https://github.com/MichalRedm/DM-project2.git
 ```
 
-Then, you need to install all the Python dependencies:
+Then, you need to install all the Python dependencies. It is recommended to use [Python virtual environment](https://docs.python.org/3/library/venv.html) and install the necessary packages on it instead of installing them globally.
 
 ```
 $ pip install -r requirements.txt
