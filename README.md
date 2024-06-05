@@ -32,6 +32,12 @@ Then, you need to install all the Python dependencies. It is recommended to use 
 $ pip install -r requirements.txt
 ```
 
+Since the files containing Movie Lens dataset are quite large, they are not stored on the repository. Instead, they can be pulled from the Movie Lens dataset website with the following script:
+
+```
+$ python download_data.py
+```
+
 Once this is done, you are ready to run the code.
 
 ## Preprocessing the data
