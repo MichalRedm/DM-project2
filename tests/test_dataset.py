@@ -1,7 +1,7 @@
 import unittest
 import mock
 import pandas as pd
-from context import dataset as ds
+import dm_project2.dataset as ds
 
 
 ratings_df = pd.DataFrame({
