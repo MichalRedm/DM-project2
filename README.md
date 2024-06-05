@@ -40,7 +40,7 @@ $ python download_data.py
 
 Once this is done, you are ready to run the code.
 
-## Preprocessing the data
+## Rating prediction
 
 The file `dm_project2/predict.py` is responsible for predicting a rating for a given user-movie pair and a given dataset:
 ```
