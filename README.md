@@ -65,4 +65,4 @@ Baseline MSE:  0.9664 (standarized:  0.8906)
 
 ## Code samples
 
-To have some insight into how our function for data preprocessing operates, visit the file [samples.ipynb](https://github.com/MichalRedm/DM-project2/blob/main/samples.ipynb).
+To have some insight into how our function for data preprocessing operates, visit the file [samples.ipynb](https://github.com/MichalRedm/DM-project2/blob/main/dm_project2/samples.ipynb).
